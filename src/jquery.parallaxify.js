@@ -543,6 +543,7 @@
 		_repositionElements: function() {
 			var moveHorizontal = this._getMoveHorizontal(),
 				moveVertical = this._getMoveVertical(),
+				firstMove = false,
 				element,
 				background,
 				bgLeft,
@@ -560,18 +561,25 @@
 				this.currentHeight = this.viewportHeight;
 			}
 
+			// When it's the first move there shouldn't be an initial
+			// move on the parallax, to avoid a flash/jump of elements
+			// at parallax start.
+			if(this.currentMoveHorizontal === undefined && this.currentMoveVertical === undefined) {
+				firstMove = true;
+			}
+
 			// Reposition elements
 			for (i = this.elements.length - 1; i >= 0; i--) {
 				element = this.elements[i];
 
 				// New positions
-				if (this.options.horizontalParallax) {
+				if (this.options.horizontalParallax && !firstMove) {
 					newPositionLeft = Math.floor(moveHorizontal * element.parallaxDistanceX / 2) + element.originalPositionLeft;
 				} else {
 					newPositionLeft = element.originalPositionLeft;
 				}
 
-				if (this.options.verticalParallax) {
+				if (this.options.verticalParallax && !firstMove) {
 					newPositionTop = Math.floor(moveVertical * element.parallaxDistanceY / 2) + element.originalPositionTop;
 				} else {
 					newPositionTop = element.originalPositionTop;
