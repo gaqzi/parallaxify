@@ -371,15 +371,25 @@
 					$this.css('top', $this.data('parallaxify-originalTop'));
 				}
 
+				// Let the range x be presented as a percentage of element in question
+				var parallaxDistanceX = ($this.data('parallaxify-range-x') !== undefined ? $this.data('parallaxify-range-x') : ($this.data('parallaxify-range') !== undefined ? $this.data('parallaxify-range') : 0));
+				if(typeof parallaxDistanceX === 'string' && parallaxDistanceX.match(/%$/)) {
+					var percent = parseInt(parallaxDistanceX.replace('%', ''), 10);
+					if(!isNaN(percent)) {
+ 						parallaxDistanceX = Math.abs($this.width() * (percent / 100));
+ 					}
+ 				}
+
 				// adding objects to element collection
 				self.elements.push({
 					$element: $this,
 					originalPositionLeft: $this.position().left,
 					originalPositionTop: $this.position().top,
-					parallaxDistanceX: ($this.data('parallaxify-range-x') !== undefined ? $this.data('parallaxify-range-x') : ($this.data('parallaxify-range') !== undefined ? $this.data('parallaxify-range') : 0)),
+					parallaxDistanceX: parallaxDistanceX,
 					parallaxDistanceY: ($this.data('parallaxify-range-y') !== undefined ? $this.data('parallaxify-range-y') : ($this.data('parallaxify-range') !== undefined ? $this.data('parallaxify-range') : 0)),
 					width: $this.outerWidth(true),
-					height: $this.outerHeight(true)
+					height: $this.outerHeight(true),
+ 					keepInBounds: $this.data('parallaxify-keep-in-bounds')
 				});
 			});
 		},
@@ -567,6 +577,14 @@
 				// New positions
 				if (this.options.horizontalParallax) {
 					newPositionLeft = Math.floor(moveHorizontal * element.parallaxDistanceX / 2) + element.originalPositionLeft;
+
+					if(element.keepInBounds) {
+						if(newPositionLeft > 0) {
+							newPositionLeft = 0;
+						} else if(newPositionLeft < (element.parallaxDistanceX - this.currentWidth) * -1) {
+							newPositionLeft = -(element.parallaxDistanceX - this.currentWidth);
+						}
+					}
 				} else {
 					newPositionLeft = element.originalPositionLeft;
 				}
