@@ -389,7 +389,8 @@
 					parallaxDistanceY: ($this.data('parallaxify-range-y') !== undefined ? $this.data('parallaxify-range-y') : ($this.data('parallaxify-range') !== undefined ? $this.data('parallaxify-range') : 0)),
 					width: $this.outerWidth(true),
 					height: $this.outerHeight(true),
- 					keepInBounds: $this.data('parallaxify-keep-in-bounds')
+					keepInBounds: $this.data('parallaxify-keep-in-bounds'),
+					firstMove: true
 				});
 			});
 		},
@@ -553,7 +554,6 @@
 		_repositionElements: function() {
 			var moveHorizontal = this._getMoveHorizontal(),
 				moveVertical = this._getMoveVertical(),
-				firstMove = false,
 				element,
 				background,
 				bgLeft,
@@ -571,19 +571,12 @@
 				this.currentHeight = this.viewportHeight;
 			}
 
-			// When it's the first move there shouldn't be an initial
-			// move on the parallax, to avoid a flash/jump of elements
-			// at parallax start.
-			if(this.currentMoveHorizontal === undefined && this.currentMoveVertical === undefined) {
-				firstMove = true;
-			}
-
 			// Reposition elements
 			for (i = this.elements.length - 1; i >= 0; i--) {
 				element = this.elements[i];
 
 				// New positions
-				if (this.options.horizontalParallax && !firstMove) {
+				if (this.options.horizontalParallax) {
 					newPositionLeft = Math.floor(moveHorizontal * element.parallaxDistanceX / 2) + element.originalPositionLeft;
 
 					if(element.keepInBounds) {
@@ -597,14 +590,17 @@
 					newPositionLeft = element.originalPositionLeft;
 				}
 
-				if (this.options.verticalParallax && !firstMove) {
+				if (this.options.verticalParallax) {
 					newPositionTop = Math.floor(moveVertical * element.parallaxDistanceY / 2) + element.originalPositionTop;
 				} else {
 					newPositionTop = element.originalPositionTop;
 				}
 
-				this._setPosition(element.$element, newPositionLeft, element.originalPositionLeft, newPositionTop, element.originalPositionTop);
-
+				if(element.firstMove) {
+					element.firstMove = false;
+				} else {
+					this._setPosition(element.$element, newPositionLeft, element.originalPositionLeft, newPositionTop, element.originalPositionTop);
+				}
 			}
 
 			// Reposition backgrounds
